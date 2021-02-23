@@ -1,6 +1,6 @@
 ---
 title: "Case Study 1 DDS 6306"
-author: "Cameron Stewart"
+author: "Cameron Stewart and Adam Alidra"
 date: "2/14/2021"
 output: html_document
 editor_options: 
@@ -28,6 +28,8 @@ library(tidyverse)
 
 beers = read.csv("~/Documents/SMU_DS/Doing Data Science/DDS_Git/Doing-Data-Science/Unit 8 and 9 Case Study 1/Beers.csv",header = TRUE)
 
+#beers = read.csv('/Users/adalidra/Desktop/Data Science Program/DS6306/MSDS_6306_Doing-Data-Science/Unit 8 and 9 Case Study 1/Beers.csv',header = TRUE)
+
 colnames(beers)[1]="Beer_Name"
 beers$Beer_ID = as.factor(beers$Beer_ID)
 beers$Brewery_id = as.factor(beers$Brewery_id)
@@ -38,6 +40,8 @@ str(beers)
 #Read in breweries.csv and convert variables to the appropriate class. Also change the 'Name' column to be more specific due to conflict with the other dataset
 
 breweries = read.csv("~/Documents/SMU_DS/Doing Data Science/DDS_Git/Doing-Data-Science/Unit 8 and 9 Case Study 1/Breweries.csv",header = TRUE)
+
+#breweries = read.csv('/Users/adalidra/Desktop/Data Science Program/DS6306/MSDS_6306_Doing-Data-Science/Unit 8 and 9 Case Study 1/Breweries.csv',header = TRUE)
 
 colnames(breweries)[2] = "Brewery_Name"
 breweries$Brew_ID = as.factor(breweries$Brew_ID)
@@ -50,14 +54,27 @@ str(breweries)
 
 ```{r}
 breweries_by_state = data.frame(breweries %>% group_by(State) %>% summarise(Count = n()) %>% arrange(desc(Count)))
+
 breweries_by_state
+
+breweries_by_state$State= fct_reorder(breweries_by_state$State, desc(breweries_by_state$Count))
+
 head(breweries_by_state,25) %>% ggplot(aes(x=reorder(State,-Count),y=Count))+geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Count of Breweries") + ggtitle("Count of Breweries per State","Top 25 States") + theme(axis.text.x=element_text(angle=45, hjust=1))
+
+#Adding combined chart of all 51 states (doesn't output in knit file well)
+breweries_by_state %>% ggplot(aes(x=reorder(State,-Count),y=Count))+geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Count of Breweries") + ggtitle("Count of Breweries per State") + theme(axis.text.x=element_text(angle=45, hjust=1))
 ```
+
+## total number of breweries in each state
+
+breweries_by_state = data.frame(breweries %>% group_by(State) %>% summarise(Count = n()) %>% arrange(desc(Count)))
+breweries_by_state
+head(breweries_by_state, 51) %>% ggplot(aes(x=reorder(State,-Count),y=Count))+geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Count of Breweries") + ggtitle("Count of Breweries per State", "50 States and DC") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1))
 
 ## Merge beer data with the breweries data. Printing the first 6 observations and the last 6 observations to check the merged file.
 
 ```{r}
-#Performed outter merge
+#Performed outer merge
 
 beers_merge=merge(beers,breweries,by.x = "Brewery_id", by.y = "Brew_ID")
 str(beers_merge)
@@ -73,7 +90,7 @@ beers_merge[beers_merge$State==' SD',]
 miss_var_cumsum(beers)
 miss_var_cumsum(breweries)
 miss_var_cumsum(beers_merge)
-gg_miss_var(beers_merge) + ggtitle("Missing Values per Variable in Merged Dataset")
+gg_miss_var(beers_merge) + ggtitle("Missing Values per Variable in Merged Dataset") + theme(axis.text.x=element_text(size= 12))
 ```
 
 #### The brewries data frame has no NA values but the beers data frame has 1067 NA values. When the two tables are merged together, the 1067 NA values from the beers data frame are transferred to the beers_merge data frame. There are 1005 NA values in IBU and 62 NA values in ABV.
@@ -91,27 +108,35 @@ ABV_IBU_by_state$State= fct_reorder(ABV_IBU_by_state$State, desc(ABV_IBU_by_stat
 ABV_IBU_by_state = ABV_IBU_by_state %>% arrange(desc(median_ABV))
 
 #Due to the plot being too cluttered when plotting all states at once, slice the data frame in half and make two bar charts
-head(ABV_IBU_by_state,25) %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State","Top 25 States") + theme(axis.text.x=element_text(angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.07,0.01),limits = c(0,0.065))
+head(ABV_IBU_by_state,25) %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State","Top 25 States") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.07,0.01),limits = c(0,0.065))
 
-tail(ABV_IBU_by_state,26) %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State","Bottom 26 States") + theme(axis.text.x=element_text(angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.06,0.01),limits = c(0,0.065))
+tail(ABV_IBU_by_state,26) %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State","Bottom 26 States") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.06,0.01),limits = c(0,0.065))
+
+#Adding combined chart of all 51 states (doesn't output in knit file well)
+ABV_IBU_by_state %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.07,0.01),limits = c(0,0.065))
+
+
 
 #Repeat steps above to plot median_IBU       
 ABV_IBU_by_state$State= fct_reorder(ABV_IBU_by_state$State, desc(ABV_IBU_by_state$median_IBU))
 
 ABV_IBU_by_state = ABV_IBU_by_state %>% arrange(desc(median_IBU))
 
-head(ABV_IBU_by_state,25) %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State","Top 25 States") + theme(axis.text.x=element_text(angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
+head(ABV_IBU_by_state,25) %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State","Top 25 States") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
 
-tail(ABV_IBU_by_state,26) %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State","Bottom 26 States") + theme(axis.text.x=element_text(angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
+tail(ABV_IBU_by_state,26) %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State","Bottom 26 States") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
+
+#Adding combined chart of all 51 states (doesn't output in knit file well)
+ABV_IBU_by_state %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
 ```
 
 ## Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
 
 ```{r}
-#Max ABV beer
+#Max IBU beer
 beers_merge[which(beers_merge$IBU==max(beers_merge$IBU,na.rm = TRUE)),]
 
-#Max IBU beer
+#Max ABV beer
 beers_merge[which(beers_merge$ABV==max(beers_merge$ABV,na.rm = TRUE)),]
 ```
 
@@ -120,18 +145,19 @@ beers_merge[which(beers_merge$ABV==max(beers_merge$ABV,na.rm = TRUE)),]
 
 ```{r}
 summary(beers_merge$ABV)
-beers_merge %>% ggplot() + geom_boxplot(aes(x=ABV,y="All Beers")) + coord_flip()
+
+#Looking at beers between 9% and 10% ABV
+dim(beers_merge[beers_merge$ABV<.1 & (beers_merge$ABV>.09 & !is.na(beers_merge$ABV)),])
+
+#Plotting ABV Distribution
+beers_merge %>% ggplot() + geom_boxplot(aes(x=ABV,y="All Beers"), color='skyblue', fill='steelblue') + ggtitle("Distribution of ABV Amongst All Beers") + coord_flip() + theme(axis.text.x=element_text(size= 14, hjust=.5))
 ```
 
 ##  Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.  Make your best judgment of a relationship and EXPLAIN your answer.
 
 ```{r}
-beers_merge %>% ggplot(aes(x=ABV,y=IBU)) + geom_point() + geom_smooth(method = "lm")
+beers_merge %>% ggplot(aes(x=ABV,y=IBU)) + geom_point() + geom_smooth(method = "lm") + ggtitle("Plot of ABV and IBU of All Beers") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1))
+
+#Linear model data (such as R-Squared)
+summary(lm(IBU~ABV,data = beers_merge))
 ```
-
-
-
-
-
-
-
