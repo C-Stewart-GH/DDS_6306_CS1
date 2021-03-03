@@ -161,3 +161,178 @@ beers_merge %>% ggplot(aes(x=ABV,y=IBU)) + geom_point() + geom_smooth(method = "
 #Linear model data (such as R-Squared)
 summary(lm(IBU~ABV,data = beers_merge))
 ```
+
+## Budweiser would also like to investigate the difference with respect to IBU and ABV between IPAs (India Pale Ales) and other types of Ale (any beer with “Ale” in its name other than IPA).  You decide to use KNN classification to investigate this relationship.  Provide statistical evidence one way or the other. You can of course assume your audience is comfortable with percentages … KNN is very easy to understand conceptually.
+
+## In addition, while you have decided to use KNN to investigate this relationship (KNN is required) you may also feel free to supplement your response to this question with any other methods or techniques you have learned.  Creativity and alternative solutions are always encouraged.  
+
+```{r}
+#Convert all blank Styles to NA so they will be removed during cleaning
+beers_merge[beers_merge==""]=NA #You can also do then when loading in the data
+
+#Check dim of beers_merge and then check how many rows don't have any NAs
+dim(beers_merge)
+sum(complete.cases(beers_merge))
+
+#Clean the dataset and verify dim of cleaned data
+beers_merge_clean = na.omit(beers_merge)
+
+#Reset row names after cleaning
+beers_merge_clean[214,] #Example of why they need to be cleaned
+row.names(beers_merge_clean) = 1:dim(beers_merge_clean)[1]
+beers_merge_clean[214,]
+
+#Reset factor levels of Style (because we removed blanks and NAs)
+beers_merge_clean$Style = factor(beers_merge_clean$Style)
+
+##Filter dataset to include only Ales and divide between IPA and non-IPA Ale
+beers_merge_ale = beers_merge_clean[grep(x = beers_merge_clean$Style,pattern = '(\\bIPA\\b|\\bAle\\b)',ignore.case = TRUE),]
+beers_merge_ale$IPA_or_Other_Ale = beers_merge_ale$Style
+beers_merge_ale$IPA_or_Other_Ale = as.character(beers_merge_ale$IPA_or_Other_Ale)
+beers_merge_ale$IPA_or_Other_Ale[grepl(x = beers_merge_ale$IPA_or_Other_Ale,pattern = '(\\bIPA\\b)',ignore.case = TRUE)]="IPA"
+beers_merge_ale$IPA_or_Other_Ale[grep(x = beers_merge_ale$IPA_or_Other_Ale,pattern = '(\\bAle\\b)',ignore.case = TRUE)]="Other_Ale"
+beers_merge_ale$IPA_or_Other_Ale = factor(beers_merge_ale$IPA_or_Other_Ale)
+
+#Standardize values of input variables
+beers_merge_ale$Z_ABV = scale(beers_merge_ale$ABV)
+beers_merge_ale$Z_IBU = scale(beers_merge_ale$IBU)
+
+#Repeat but with internal cross validation (we run multiple samples because of ties)
+str(beers_merge_ale)
+train_cols = beers_merge_ale[,12:13]
+outcome_data = beers_merge_ale[,11]
+num_rand_samples = 15
+max_k = 55
+accuracy_matrix = matrix(nrow = num_rand_samples,ncol = max_k)
+
+for(i in 1:num_rand_samples)
+{
+  for(j in 1:max_k)
+  {
+    class_data = knn.cv(train_cols,cl = outcome_data,k=j)
+    CM = confusionMatrix(table(class_data,outcome_data))
+    accuracy_matrix[i,j] = CM$overall[1]
+  }
+}
+ 
+MeanAcc = colMeans(accuracy_matrix)
+which(MeanAcc==max(MeanAcc))
+max(MeanAcc)
+plot(seq(1,max_k,1),MeanAcc, type = "l") 
+```
+
+
+#Find another insight
+```{r}
+##Filter dataset to include only Ales and divide between IPA and non-IPA Ale
+beer_style_breakdown = data.frame(beers_merge_clean %>% group_by(Style) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beers_merge_simplified_style = beers_merge_clean
+str(beers_merge_clean$Style)
+levels(beers_merge_clean$Style)
+beers_merge_simplified_style$type = beers_merge_simplified_style$Style
+beers_merge_simplified_style$type = as.character(beers_merge_simplified_style$type)
+beers_merge_simplified_style$type[grepl(x = beers_merge_simplified_style$type,pattern = '(\\bIPA\\b)',ignore.case = TRUE)]="IPA "
+
+beer_style_breakdown2 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown2
+
+beers_merge_simplified_style$type[grepl(x = beers_merge_simplified_style$type,pattern = '(\\bLager\\b)',ignore.case = TRUE)]="Lager "
+
+beer_style_breakdown3 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown3
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\bRed Ale\\b|\\bAmber Ale\\b)',ignore.case = TRUE)]="Red_or_Amber_Ale "
+
+beer_style_breakdown4 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown4
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\bPale\\b)',ignore.case = TRUE)]="Pale Ale "
+
+beer_style_breakdown5 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown5
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\bStout\\b)',ignore.case = TRUE)]="Stout "
+
+beer_style_breakdown6 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown6
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\bPilsner\\b|\\bPilsener\\b)',ignore.case = TRUE)]="Pilsner "
+
+beer_style_breakdown7 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown7
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\bBlonde\\b)',ignore.case = TRUE)]="Blonde Ale "
+
+beer_style_breakdown8 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown8
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\bAle$)',ignore.case = TRUE)]="Other Ale "
+
+beer_style_breakdown9 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown9
+
+beers_merge_simplified_style$type[grep(x = beers_merge_simplified_style$type,pattern = '(\\S)$',ignore.case = TRUE)]="Other Non-Ale Beer "
+
+beer_style_breakdown10 = data.frame(beers_merge_simplified_style %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+
+beer_style_breakdown10
+
+beers_merge_simplified_style %>% ggplot(aes(x=ABV,y=IBU)) + geom_point(aes(color=type)) + geom_smooth(method = "lm") + ggtitle("Plot of ABV and IBU of All Beers") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1))
+
+#Using NB to predict beer type based on IBU and ABV
+beers_merge_simplified_style$type = factor(beers_merge_simplified_style$type)
+str(beers_merge_simplified_style)
+dim(beers_merge_simplified_style)
+iterations = 20
+
+masterAcc = matrix(nrow = iterations)
+masterSens = matrix(nrow = iterations)
+masterSpec = matrix(nrow = iterations)
+
+dim(beers_merge_simplified_style)
+
+splitPerc = .7 #Training / Test split Percentage
+
+for(j in 1:iterations)
+{
+  set.seed(j)
+  trainIndices = sample(1:dim(beers_merge_simplified_style)[1],round(splitPerc * dim(beers_merge_simplified_style)[1]))
+  train = beers_merge_simplified_style[trainIndices,]
+  test = beers_merge_simplified_style[-trainIndices,]
+  
+  train_columns_split_model = train[,4:5]
+  test_columns = test[,4:5]
+  
+  model = naiveBayes(train_columns_split_model,train$type)
+  CM = confusionMatrix(table(predict(model,test_columns),test$type))
+  masterAcc[j] = CM$overall[1]
+  masterSens[j] = CM$byClass[1]
+  masterSpec[j] = CM$byClass[2]
+}
+
+MeanAcc = colMeans(masterAcc)
+MeanSens = colMeans(masterSens)
+MeanSpec = colMeans(masterSpec)
+
+MeanAcc
+MeanSens
+MeanSpec
+
+#Loop 100 times to get a more consistent accuracy for NB
+iterations = 50
+
+masterAcc = matrix(nrow = iterations)
+masterSens = matrix(nrow = iterations)
+masterSpec = matrix(nrow = iterations)
+
+splitPerc = .7 #Training / Test split Percentage
+```
