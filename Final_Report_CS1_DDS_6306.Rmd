@@ -193,7 +193,7 @@ beers_merge %>% ggplot() + geom_boxplot(aes(x=ABV,y="All Beers"), color='skyblue
 
 ```{r}
 #Plot scatter plot with linear trend line
-beers_merge %>% ggplot(aes(x=ABV,y=IBU)) + geom_point() + geom_smooth(method = "lm") + ggtitle("Relation between ABV to IBV")+ theme(axis.text.x=element_text(size= 10, angle=45, hjust=1))
+beers_merge %>% ggplot(aes(x=ABV,y=IBU)) + geom_point() + geom_smooth(method = "lm") + ggtitle("Relation between ABV to IBU")+ theme(axis.text.x=element_text(size= 10, angle=45, hjust=1))
 
 #Display the linear model summary to evaluate the linear relationship
 summary(lm(IBU~ABV,data = beers_merge))
@@ -256,7 +256,7 @@ for(i in 1:num_rand_samples)
 MeanAcc = colMeans(accuracy_matrix)
 which(MeanAcc==max(MeanAcc))
 max(MeanAcc)
-plot(seq(1,max_k,1),MeanAcc, type = "l", main= "kNN Classification of Beer Type based on ABV & IBV %'s", xlab= "k Value", ylab= "Mean Accuracy")
+plot(seq(1,max_k,1),MeanAcc, type = "l", main= "KNN Classification of Beer Type based on ABV & IBU", xlab= "k Value", ylab= "Mean Accuracy")
 ```
 
 #### The KNN internal leave-one-out cross validation uses a standardized ABV and IBU to predict if the beer is an IPA or Other non-IPA Ale. All non-Ale beers were removed from the data leaving 944 beers. The KNN model was tested 15 times for every k from 1 to 55. k represents the number of closest points used to predict the category. The ideal k value for this model is 23. The mean accuracy of the model at k=23 is 86.86%. This means that 86.86% of the time the model correctly predicted the category of IPA or Other non-IPA Ale based on the ABV and IBU. This model is 1.74 times more accurate than a random classification guess which would be 50% accurate. (Note: Removed rows with NA or Blank values in ABV, IBU, or Style Variables) 
