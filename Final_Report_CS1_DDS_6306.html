@@ -842,101 +842,10 @@ which(MeanAcc==max(MeanAcc))</code></pre>
 </div>
 <div id="use-naive-bayes-to-classify-common-beer-styles-based-on-abv-and-ibu" class="section level2">
 <h2>Use Naive Bayes to classify common beer styles based on ABV and IBU</h2>
-<pre class="r"><code>##Review count of beers by style to determine generalized categories to use
-data.frame(beers_merge_clean %&gt;% group_by(Style) %&gt;% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %&gt;% arrange(desc(Count)))</code></pre>
-<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
-<pre><code>##                                  Style Count ABV_median IBU_median
-## 1                         American IPA   301     0.0650       69.0
-## 2              American Pale Ale (APA)   153     0.0550       44.0
-## 3             American Amber / Red Ale    77     0.0560       31.0
-## 4       American Double / Imperial IPA    75     0.0870       91.0
-## 5                  American Blonde Ale    61     0.0500       20.0
-## 6              American Pale Wheat Ale    61     0.0480       20.0
-## 7                      American Porter    39     0.0580       31.0
-## 8                   American Brown Ale    38     0.0550       26.0
-## 9               Fruit / Vegetable Beer    30     0.0505       15.5
-## 10                          Hefeweizen    27     0.0510       15.0
-## 11                              Kölsch    27     0.0490       22.0
-## 12                             Witbier    24     0.0500       15.5
-## 13              Saison / Farmhouse Ale    23     0.0580       30.0
-## 14                Märzen / Oktoberfest    21     0.0560       23.0
-## 15                  American Black Ale    20     0.0720       73.0
-## 16                           Cream Ale    18     0.0525       20.0
-## 17                     German Pilsener    17     0.0500       35.0
-## 18          American Amber / Red Lager    16     0.0465       23.0
-## 19                 American Pale Lager    16     0.0490       18.5
-## 20                      American Stout    16     0.0580       40.0
-## 21                      Czech Pilsener    16     0.0530       33.0
-## 22                    American Pilsner    14     0.0490       21.5
-## 23 Extra Special / Strong Bitter (ESB)    14     0.0560       41.0
-## 24                        Vienna Lager    14     0.0495       23.5
-## 25              Scotch Ale / Wee Heavy    13     0.0750       23.0
-## 26                 American Strong Ale    12     0.0765       70.0
-## 27                 Munich Helles Lager    12     0.0460       18.0
-## 28              American Adjunct Lager    11     0.0470        9.0
-## 29                       Oatmeal Stout    11     0.0570       29.0
-## 30                         Pumpkin Ale    11     0.0600       20.0
-## 31                        Scottish Ale    11     0.0800       23.0
-## 32                   English Brown Ale    10     0.0500       20.5
-## 33                            Rye Beer     9     0.0630       57.0
-## 34                             Altbier     8     0.0515       36.5
-## 35                    Belgian Pale Ale     8     0.0505       21.0
-## 36                       Irish Red Ale     8     0.0525       26.5
-## 37              Russian Imperial Stout     8     0.0990       94.0
-## 38                       Winter Warmer     8     0.0670       22.0
-## 39        English India Pale Ale (IPA)     7     0.0680       47.0
-## 40                                Gose     7     0.0440       10.0
-## 41                  American White IPA     6     0.0610       45.0
-## 42                  Milk / Sweet Stout     6     0.0500       25.5
-## 43             American Dark Wheat Ale     5     0.0580       25.0
-## 44                  Berliner Weissbier     5     0.0390        8.0
-## 45           Dortmunder / Export Lager     5     0.0520       24.0
-## 46                    English Pale Ale     5     0.0510       30.0
-## 47                Herbed / Spiced Beer     5     0.0580       15.0
-## 48                     Euro Dark Lager     4     0.0565       22.0
-## 49                         Schwarzbier     4     0.0480       30.0
-## 50                              Tripel     4     0.0910       27.5
-## 51    American Double / Imperial Stout     3     0.0990       51.0
-## 52           American India Pale Lager     3     0.0670       65.0
-## 53                       Baltic Porter     3     0.0990       52.0
-## 54                    Belgian Dark Ale     3     0.0830       35.0
-## 55                         Belgian IPA     3     0.0700       61.0
-## 56                                Bock     3     0.0650       25.0
-## 57                  English Barleywine     3     0.0990       60.0
-## 58                      English Bitter     3     0.0440       28.0
-## 59                  English Strong Ale     3     0.0850       52.0
-## 60              Foreign / Export Stout     3     0.0600       36.0
-## 61                     Irish Dry Stout     3     0.0590       34.0
-## 62          Keller Bier / Zwickel Bier     3     0.0510       20.0
-## 63                         Light Lager     3     0.0370       12.0
-## 64                 Munich Dunkel Lager     3     0.0580       21.0
-## 65                              Radler     3     0.0450       21.0
-## 66                    Abbey Single Ale     2     0.0490       22.0
-## 67                 American Barleywine     2     0.0990       96.0
-## 68                   American Wild Ale     2     0.0715       27.0
-## 69             Belgian Strong Pale Ale     2     0.0835       25.0
-## 70                      Bière de Garde     2     0.0690       23.0
-## 71      California Common / Steam Beer     2     0.0535       41.0
-## 72                          Chile Beer     2     0.0545       24.0
-## 73                          Doppelbock     2     0.0785       24.5
-## 74                              Dubbel     2     0.0745       21.0
-## 75                        Dunkelweizen     2     0.0560       16.0
-## 76               English Dark Mild Ale     2     0.0400       22.0
-## 77               Maibock / Helles Bock     2     0.0565       27.5
-## 78  American Double / Imperial Pilsner     1     0.0750       85.0
-## 79             Belgian Strong Dark Ale     1     0.0920       72.0
-## 80               English Pale Mild Ale     1     0.0500       16.0
-## 81                       English Stout     1     0.0800       66.0
-## 82                     Euro Pale Lager     1     0.0530       22.0
-## 83                  Flanders Oud Bruin     1     0.0630       23.0
-## 84                            Grisette     1     0.0560       25.0
-## 85                             Old Ale     1     0.0720       40.0
-## 86                               Other     1     0.0480       16.0
-## 87                    Quadrupel (Quad)     1     0.0900       24.0
-## 88                          Roggenbier     1     0.0500       20.0
-## 89                         Smoked Beer     1     0.0510       35.0
-## 90                           Wheat Ale     1     0.0600       24.0</code></pre>
-<pre class="r"><code>#Create beers_merge_simplified_style for Naive Bayes analysis (copy of beers_merge_clean). Create new column called &#39;type&#39; which will be used to store generalized beer categories
+<pre class="r"><code>##Review count of beers by style to determine generalized categories to use (uncomment code below to see the list)
+#data.frame(beers_merge_clean %&gt;% group_by(Style) %&gt;% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %&gt;% arrange(desc(Count)))
+
+#Create beers_merge_simplified_style for Naive Bayes analysis (copy of beers_merge_clean). Create new column called &#39;type&#39; which will be used to store generalized beer categories
 beers_merge_simplified_style = beers_merge_clean
 beers_merge_simplified_style$type = beers_merge_simplified_style$Style
 

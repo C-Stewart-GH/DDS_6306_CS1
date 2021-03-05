@@ -264,8 +264,8 @@ plot(seq(1,max_k,1),MeanAcc, type = "l", main= "kNN Classification of Beer Type 
 ## Use Naive Bayes to classify common beer styles based on ABV and IBU
 
 ```{r}
-##Review count of beers by style to determine generalized categories to use
-data.frame(beers_merge_clean %>% group_by(Style) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
+##Review count of beers by style to determine generalized categories to use (uncomment code below to see the list)
+#data.frame(beers_merge_clean %>% group_by(Style) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count)))
 
 #Create beers_merge_simplified_style for Naive Bayes analysis (copy of beers_merge_clean). Create new column called 'type' which will be used to store generalized beer categories
 beers_merge_simplified_style = beers_merge_clean
