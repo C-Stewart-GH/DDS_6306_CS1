@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Craft Beer and Brewery Report for CEO and CFO of Budweiser: 
 
-#### In this report, you will find our team's analysis and response to the seven questions requested from Budweiser and our team's additional insights based on the Beers and Breweries datasets. The initial investigation is a state level study of Brewery count, median ABV, and median IBU. Looking deeper at the key beer characteristics, our team examined the distribution of ABV, the relationship between ABV vs. IBU, and noted exteme values. Utilizing the relationship between ABV and IBU, our team deployed machine learning techniques (KNN and Naive Bayes) to predict the beer style. The first model predicts IPA vs. Other Ales and the second model predicts classifies each beer to a generalized list of beer styles. For each analysis, NAs will be addressed when applicable.
+#### In this report, you will find our team's analysis and response to the seven questions requested from Budweiser and our team's additional insights based on the Beers and Breweries datasets. The initial investigation is a state level study of Brewery count, median ABV, and median IBU. Looking deeper at the key beer characteristics, our team examined the distribution of ABV, the relationship between ABV vs. IBU, and noted the maximum values for each. Utilizing the relationship between ABV and IBU, our team deployed machine learning techniques (KNN and Naive Bayes) to predict the beer style. The first model predicts IPA vs. Other Ales and the second model classifies each beer to a generalized list of beer styles. For each analysis, NAs will be addressed where applicable.
 
 ## Load the required libraries, read in the data, and adjust variables to the correct type
 
