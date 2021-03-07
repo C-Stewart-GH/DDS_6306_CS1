@@ -140,7 +140,7 @@ head(ABV_IBU_by_state,25) %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat 
 tail(ABV_IBU_by_state,26) %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State","Bottom 26 States") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.06,0.01),limits = c(0,0.065))
 
 #Plot all 51 states at once
-ABV_IBU_by_state %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State","Top 25 States") + theme(axis.text.x=element_text(size= 7, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.07,0.01),limits = c(0,0.065))
+ABV_IBU_by_state %>% ggplot(aes(x=State,y=median_ABV)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median ABV") + ggtitle("Median ABV by State") + theme(axis.text.x=element_text(size= 7, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,0.07,0.01),limits = c(0,0.065))
 
 ##Plot Median IBU by State
 
@@ -156,7 +156,7 @@ head(ABV_IBU_by_state,25) %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat 
 tail(ABV_IBU_by_state,26) %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State","Bottom 26 States") + theme(axis.text.x=element_text(size= 10, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
 
 #Plot all 51 states at once
-ABV_IBU_by_state %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State","Bottom 26 States") + theme(axis.text.x=element_text(size= 7, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
+ABV_IBU_by_state %>% ggplot(aes(x=State,y=median_IBU)) + geom_bar(stat = 'identity',color='skyblue',fill='steelblue') + xlab("State") + ylab("Median IBU") + ggtitle("Median IBU by State") + theme(axis.text.x=element_text(size= 7, angle=45, hjust=1)) + scale_y_continuous(breaks = seq(0,65,10),limits = c(0,62))
 ```
 
 #### When looking at Median ABV by State: DC and KY are tied for the highest ABV at 6.25%, UT has the lowest median ABV by a significant margin at 4.00%, and 84% of states have a median ABV between 5% - 6% (inclusive). (Note: Only removed values are rows with NA in ABV column)
@@ -259,7 +259,7 @@ max(MeanAcc)
 plot(seq(1,max_k,1),MeanAcc, type = "l", main= "KNN Classification of Beer Type based on ABV & IBU", xlab= "k Value", ylab= "Mean Accuracy")
 ```
 
-#### The KNN internal leave-one-out cross validation uses a standardized ABV and IBU to predict if the beer is an IPA or Other non-IPA Ale. All non-Ale beers were removed from the data leaving 944 beers. The KNN model was tested 15 times for every k from 1 to 55. k represents the number of closest points used to predict the category. The ideal k value for this model is 23. The mean accuracy of the model at k=23 is 86.86%. This means that 86.86% of the time the model correctly predicted the category of IPA or Other non-IPA Ale based on the ABV and IBU. This model is 1.74 times more accurate than a random classification guess which would be 50% accurate. (Note: Removed rows with NA or Blank values in ABV, IBU, or Style Variables) 
+#### The KNN internal leave-one-out cross validation uses a standardized ABV and IBU to predict if the beer is an IPA or Other non-IPA Ale. All non-Ale beers were removed from the data leaving 944 beers. The KNN model was tested 15 times for every k from 1 to 55. k represents the number of closest points used to predict the category. The ideal k value for this model is 23. The mean accuracy of the model at k=23 is 86.86%. This means that 86.86% of the time the model correctly predicted the category of IPA or Other non-IPA Ale based on the ABV and IBU. This model is 1.49 times more accurate than classifying each of the Beers as the most popular value 'Other Ale' (58.4% of the values). (Note: Removed rows with NA or Blank values in ABV, IBU, or Style Variables) 
 
 ## Use Naive Bayes to classify common beer styles based on ABV and IBU
 
@@ -275,6 +275,12 @@ beers_merge_simplified_style$type = beers_merge_simplified_style$Style
 beers_merge_simplified_style$type = as.character(beers_merge_simplified_style$type)
 
 beers_merge_simplified_style$type[grepl(x = beers_merge_simplified_style$type,pattern = '(\\bIPA\\b)',ignore.case = TRUE)]="IPA "
+
+f = data.frame(beers_merge_simplified_style) %>% group_by(type) %>% summarise(Count = n(), ABV_median=median(ABV), IBU_median=median(IBU)) %>% arrange(desc(Count))
+
+f
+
+sum(f$Count)
 
 beers_merge_simplified_style$type[grepl(x = beers_merge_simplified_style$type,pattern = '(\\bLager\\b)',ignore.case = TRUE)]="Lager "
 
@@ -328,4 +334,8 @@ MeanSens
 MeanSpec
 ```
 
-#### The Naive Bayes model uses ABV and IBU to predict which of the 9 generalized beer types the beer falls in to (based on the generalized types manually created). The model evaluates 1403 beers which includes beers that were not evaluated in the kNN analysis and includes more specific categorization than the knn analysis. We ran the model 50 times at a 70%/30% training/test split. The mean accuracy of the 50 iterations is 45.00%. This means the model predicted the generalized type of beer 45% of the time based on the ABV and IBU. This model is 4.05 times more accurate than a random classification guess which would be 11.11% accurate. For the Naive Bayes model, the mean sensitivity is 61.69% and the mean specificity is 86.47%. (Note: Removed rows with NA or Blank values in ABV, IBU, or Style Variables) 
+#### The Naive Bayes model uses ABV and IBU to predict which of the 9 generalized beer types the beer falls in to (based on the generalized types manually created). The model evaluates 1403 beers which includes beers that were not evaluated in the kNN analysis and includes more specific categorization than the knn analysis. We ran the model 50 times at a 70%/30% training/test split. The mean accuracy of the 50 iterations is 45.00%. This means the model predicted the generalized type of beer 45% of the time based on the ABV and IBU. This model is 1.61 times more accurate than classifying each of the Beers as the most popular value 'IPA' (27.94% of the values). For the Naive Bayes model, the mean sensitivity is 61.69% and the mean specificity is 86.47%. (Note: Removed rows with NA or Blank values in ABV, IBU, or Style Variables) 
+
+## Conclusion
+
+#### Our team cleaned the data of NA values and provided clear visuals of ABV and IBU Medians at a state level. Looking deeper, our team identified a linear relationship between ABV and IBU. Leveraging this relationship, we were able to build two machine learning models to predict the style of Beer. The first used KNN to look at IPA vs Other Ales. The second used Naive Bayes to look at higher level beer types. KNN offered an accurate prediction method for this high level view of Ales. Naive Bayes offered a more granular approach while offering moderate accuracy. This analysis offers insights into the ABV and IBU ranges customers expect based on the style of beer. Also, the machine learning models can be implemented immediately while future data collection could further refine the model.
